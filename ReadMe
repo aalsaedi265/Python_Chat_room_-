@@ -1,0 +1,20 @@
+
+## Implement a fully-functioning TCP (transmission control protocol ) chat
+one server  hosts the chat and multiple clients that connect to it and communicate with each other. At the end, can add custom features like chat rooms, commands, role.
+The tcp does through the magic of Transfer Protocol (FTP) over TCP/IP connection
+
+Two files ( scrips)
+one for the server the other for the clients
+
+(SOCK_STREAM) indicates that we are using TCP and not UDP.
+(AF_INET) indicates that we are using an internet socket rather than an unix socket
+
+
+# notes
+py -m venv chat
+.\chat\Scripts\activate
+deactivate
+
+str.encode('ascii')    => turns to string to bytes so it can be sent over a network 
+
+remove list to eliminate first appearance of elements
