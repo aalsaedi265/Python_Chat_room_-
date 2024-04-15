@@ -20,50 +20,54 @@ nicknames = []
 def broadcast(message):
     for client in clients:
         client.send(message)
+
+def ban_user(name_to_ban):
+    if name_to_ban in nicknames:
+        name_index = nicknames.index(name_to_ban)
+        client_to_ban = clients[name_index]
+        clients.remove(client_to_ban)
+        client_to_ban.send('You were banned by an admin.'.encode('ascii'))
+        client_to_ban.close()
+        nicknames.remove(name_to_ban)
+        broadcast(f'{name_to_ban} was banned by an admin!'.encode('ascii'))
+
+        with open('bans.txt', 'a') as f:
+            f.write(f'{name_to_ban}\n')
+
+def safely_remove_client(client):
+    try:
+        index = clients.index(client)
+        clients.remove(client)
+        nickname = nicknames.pop(index)
+        client.close()
+        broadcast(f'{nickname} left!'.encode('ascii'))
+    except ValueError:
+        print("Client already removed")
+
         
 #handling client messages
 def handle(client):
     while True:
         try:
-            #broadcasting
-            msg = message = client.recv(1024)
-            if msg.decode('ascii').startswith('KICK'):
-                
+            message = client.recv(1024).decode('ascii')
+            if message.startswith('KICK'):
                 if nicknames[clients.index(client)] == 'admin':
-                    
-                    name_to_kick = msg.decode('ascii')[5:]
-                    #another option is reading the socket ip and doing ip bands
+                    name_to_kick = message[5:]
                     kick_user(name_to_kick)
                 else:
                     client.send('Command was refused!'.encode('ascii'))
-            
-            # insures parasing for ban is done right        
-            elif msg.decode('ascii').startswith('BAN'):
+            elif message.startswith('BAN'):
                 if nicknames[clients.index(client)] == 'admin':
-                    name_to_ban = msg.decode('ascii')[4:]
-                    kick_user(name_to_ban)
-                    
-                    # "a" is appending mode
-                    with open('bans.txt','a') as f:
-                        f.write(f'{name_to_ban}\n')
-                        
-                    print(f'{name_to_ban} was banned!')
+                    name_to_ban = message[4:]
+                    ban_user(name_to_ban)
                 else:
                     client.send('Command was refused!'.encode('ascii'))
             else:
-                broadcast(message)
-        except:
-            if client in clients:
-                
-                # removing clients
-                index = clients.index(client)
-                clients.remove(client)
-                client.close()
-                nickname = nicknames[index]
-                # if need older py version compatiblilty use    '{} left!'.format(nickname)
-                broadcast(f'{nickname} left!'.encode('ascii'))
-                nicknames.remove(nickname)
-                break
+                broadcast(message.encode('ascii'))
+        except Exception as e:
+            print(f'Error handling message: {e}')
+            safely_remove_client(client)
+            break
         
 # Receiving / Listening Function
 def receive():
@@ -77,12 +81,12 @@ def receive():
        nickname = client.recv(1024).decode('ascii')
        
        with open('bans.txt', 'r') as f:
-           bans = f.readlines()
+            bans = [line.strip() for line in f]
         
         # bans = [line.strip() for line in f]
         #     if nickname in bans:
 
-       if nickname+'\n' in bans:
+       if nickname in bans:
             client.send('BAN'.encode('ascii'))
             client.close()
             continue

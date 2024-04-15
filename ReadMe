@@ -10,6 +10,9 @@ one for the server the other for the clients
 (AF_INET) indicates that we are using an internet socket rather than an unix socket
 
 
+/kick username and /ban username is how to implemt the admin powers overusers./,.
+
+
 # notes
 py -m venv chat
 .\chat\Scripts\activate

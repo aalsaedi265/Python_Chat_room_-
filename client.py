@@ -47,24 +47,24 @@ def receive():
 # inf loop so it can wait for input to fill up
 def write():
     while True:
-        if stop_thread: break
-        
-        message = '{}:{}'.format(nickname, input(''))
-         #username: <= the =2 to skip the space and : so we can focus on command beining with /command
-        if message[len(nickname)+2].startswith('/'):
-            
-            #functinlaity of admin
+        if stop_thread:
+            break
+
+        message = input('')
+        full_message = f'{nickname}: {message}'
+
+        if message.startswith('/'):
             if nickname == 'admin':
-                if message[len(nickname)+2].startswith('/kick'):
-                    #6 to skip /kick space
-                    client.send(f'KICK {message[len(nickname)+9]}'.encode('ascii'))
-                    
-                elif message[len(nickname)+2].startswith('/ban'):
-                    client.send(f'BAN {message[len(nickname)+8]}'.encode('ascii'))
+                if message.startswith('/kick '):
+                    client.send(f'KICK {message[6:]}'.encode('ascii'))
+                elif message.startswith('/ban '):
+                    client.send(f'BAN {message[5:]}'.encode('ascii'))
+                else:
+                    print('Unknown command or syntax error.')
             else:
-                print('command can only be executed by adminastrator ')
-        #else:
-        client.send(message.encode('ascii'))
+                print('Commands can only be executed by an administrator.')
+        else:
+            client.send(full_message.encode('ascii'))
 
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
